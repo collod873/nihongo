@@ -1,41 +1,94 @@
 // Home page behaviour: what to do next, lesson state, and the bulk export.
 //
-// Everything here reads live state from progress.js rather than anything
-// hardcoded at build time — the page should never claim a lesson is unfinished
-// when he finished it last night.
+// Reads live state from progress.js, falling back to the build-time seed in
+// #seed for anything this device has no record of. The site moved to a new
+// origin, so a device with real history behind it can still legitimately know
+// nothing — and a page that responds by calling five finished lessons "new" is
+// worse than useless.
+//
+// The seed is display only. It is never written into the store, so the export
+// stays a record of what actually happened on the device.
 
 (function () {
   function $(sel) { return document.querySelector(sel); }
 
-  function daysSince(t) {
-    if (!t) return null;
-    return Math.floor((Date.now() - t) / 86400000);
+  // Filled on DOM-ready, not at parse time: this script is loaded from <head>,
+  // so #seed does not exist yet when the module body runs. Reading it here
+  // returned null silently and the page reported zero of everything.
+  var SEED = { miss: [], slow: [], lessons: {} };
+
+  function readSeed() {
+    var el = $("#seed");
+    if (!el) return;
+    SEED.miss = el.dataset.seedMiss ? el.dataset.seedMiss.split("") : [];
+    SEED.slow = el.dataset.seedSlow ? el.dataset.seedSlow.split("") : [];
+    try { SEED.lessons = JSON.parse(el.dataset.seedLessons || "{}"); }
+    catch (e) { SEED.lessons = {}; }
+  }
+
+  function days(t) { return t ? Math.floor((Date.now() - t) / 86400000) : null; }
+  function ago(d) {
+    if (d === null) return "never";
+    if (d === 0) return "today";
+    if (d === 1) return "yesterday";
+    if (d < 21) return d + " days ago";
+    return Math.round(d / 7) + " weeks ago";
   }
 
   function stats() {
     var st = window.Progress.all();
     var keys = Object.keys(st.kana);
     var total = (window.KanaDrill && window.KanaDrill.total) || 92;
-    var mastered = keys.filter(function (k) { return st.kana[k].streak >= 3; });
-    var leeches = keys.filter(function (k) {
-      return st.kana[k].lapses >= 2 && st.kana[k].streak < 3;
-    });
     var lastDrill = 0;
     st.sessions.forEach(function (s) {
       if (s.kind !== "quiz" && s.t > lastDrill) lastDrill = s.t;
     });
-    return { st: st, total: total, seen: keys.length, mastered: mastered,
-             leeches: leeches, lastDrill: lastDrill };
+
+    if (!keys.length) {
+      // Nothing on this device. Report what the last diagnostic established
+      // rather than zero — the trainer is weighted off exactly this list, and
+      // a home page that disagreed with it would just be confusing.
+      return { fromSeed: true, total: total, mastered: 0,
+               leeches: SEED.miss, slow: SEED.slow, lastDrill: 0 };
+    }
+    return {
+      fromSeed: false, total: total, lastDrill: lastDrill,
+      mastered: keys.filter(function (k) { return st.kana[k].streak >= 3; }).length,
+      leeches: keys.filter(function (k) {
+        return st.kana[k].lapses >= 2 && st.kana[k].streak < 3;
+      }),
+      slow: []
+    };
   }
 
-  // One line, one instruction. The whole point is that he shouldn't have to ask
-  // me — or himself — what today's work is.
+  // What did he last do on each track, from real state or the seed.
+  function trackAge(ids) {
+    var st = window.Progress.all();
+    var newest = 0;
+    ids.forEach(function (id) {
+      var l = st.lessons[id];
+      if (l && l.at) newest = Math.max(newest, l.at);
+      var s = SEED.lessons[id];
+      if (s && s.on) newest = Math.max(newest, Date.parse(s.on + "T12:00:00Z") || 0);
+    });
+    return newest;
+  }
+
+  function lessonIds(track) {
+    return [].slice.call(document.querySelectorAll("#" + track + " a[data-lesson]"))
+      .map(function (a) { return a.dataset.lesson; });
+  }
+
+  // One line, one instruction — the point is that he shouldn't have to ask.
   function nextUp(s) {
-    var d = daysSince(s.lastDrill);
-    if (!s.seen) return "Start with the full 92 — it measures where you actually are.";
+    var d = days(s.lastDrill);
+    if (s.fromSeed) {
+      return "Pick up where you left off — " + s.leeches.length +
+        " leeches from your last full 92, already loaded into the drill.";
+    }
     if (d === null || d >= 2) {
-      return "It's been " + (d === null ? "a while" : d + " days") +
-        " — drill kana first. " + s.leeches.length + " leeches waiting.";
+      return "Last drilled " + ago(d) + " — kana first. " +
+        s.leeches.length + " leeches waiting.";
     }
     if (s.leeches.length > 15) {
       return s.leeches.length + " leeches in rotation. Drill, then a lesson if you have time.";
@@ -50,13 +103,29 @@
   function renderStatus() {
     var s = stats();
     var el = $("#status");
-    if (!el) return;
-    el.textContent = s.mastered.length + " / " + s.total + " mastered · " +
-      s.leeches.length + " leech" + (s.leeches.length === 1 ? "" : "es") +
-      (s.lastDrill ? " · last drilled " +
-        (daysSince(s.lastDrill) === 0 ? "today" : daysSince(s.lastDrill) + "d ago") : "");
+    if (el) {
+      el.textContent = s.fromSeed
+        ? s.leeches.length + " leeches and " + s.slow.length +
+          " shaky, from your last full 92 · nothing drilled on this device yet"
+        : s.mastered + " / " + s.total + " mastered · " + s.leeches.length +
+          " leech" + (s.leeches.length === 1 ? "" : "es") +
+          " · last drilled " + ago(days(s.lastDrill));
+    }
     var n = $("#next");
     if (n) n.textContent = nextUp(s);
+
+    // The speaking track has been idle for weeks. Say so, rather than leaving
+    // him to notice he's gone rusty.
+    var stale = $("#stale");
+    if (stale) {
+      var age = days(trackAge(lessonIds("speaking")));
+      if (age !== null && age >= 21) {
+        stale.textContent = "Speaking track: nothing since " + ago(age) +
+          ". Worth a review pass before new material — say the word and I'll build one.";
+        stale.hidden = false;
+      }
+    }
+
     if (!window.Progress.writable()) {
       var w = $("#warn");
       if (w) {
@@ -67,18 +136,29 @@
     }
   }
 
-  // Badge each lesson from real state instead of a hardcoded note.
   function renderLessons() {
     var st = window.Progress.all();
     document.querySelectorAll("a[data-lesson]").forEach(function (a) {
-      var l = st.lessons[a.dataset.lesson];
+      var id = a.dataset.lesson;
+      var live = st.lessons[id];
+      var seed = SEED.lessons[id];
       var tag = document.createElement("span");
       tag.className = "idx-state";
-      if (!l || !l.opened) { tag.textContent = "new"; tag.classList.add("is-new"); }
-      else if (l.completed) {
-        tag.textContent = l.total ? "done " + l.right + "/" + l.total : "done";
+
+      if (live && live.completed) {
+        tag.textContent = live.total ? "done " + live.right + "/" + live.total : "done";
         tag.classList.add("is-done");
-      } else { tag.textContent = "started"; }
+      } else if (seed && seed.total) {
+        tag.textContent = "done " + seed.right + "/" + seed.total;
+        tag.classList.add("is-done");
+        tag.title = "completed " + seed.on;
+      } else if ((live && live.opened) || (seed && seed.started)) {
+        tag.textContent = "unfinished";
+        tag.classList.add("is-part");
+      } else {
+        tag.textContent = "new";
+        tag.classList.add("is-new");
+      }
       a.parentNode.appendChild(tag);
     });
   }
@@ -118,7 +198,8 @@
       try {
         window.Progress.restore(box.value);
         box.hidden = true; box.value = "";
-        renderStatus();
+        document.querySelectorAll(".idx-state").forEach(function (t) { t.remove(); });
+        renderStatus(); renderLessons();
         btn.textContent = "Restored ✓";
       } catch (e) {
         btn.textContent = "Couldn't read that — " + e.message;
@@ -127,6 +208,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    readSeed();
     renderStatus();
     renderLessons();
     wireExport();

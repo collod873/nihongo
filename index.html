@@ -56,6 +56,14 @@
 }
 .idx-state.is-new { border-color: var(--accent); color: var(--accent); }
 .idx-state.is-done { border-color: var(--win); color: var(--win); }
+.idx-state.is-part { border-color: var(--muted); color: var(--ink); }
+.idx-stale {
+  color: var(--muted);
+  font-size: .9rem;
+  border-left: 3px solid var(--rule);
+  padding: .1rem 0 .1rem .8rem;
+  margin: .6rem 0 0;
+}
 .idx-restore {
   width: 100%;
   min-height: 6rem;
@@ -71,6 +79,7 @@
 </style>
 </head>
 <body>
+<div id="seed" hidden data-seed-miss="チみソムアれヲナぬモたユノまくレヌツわミけワサニフ" data-seed-slow="をちイクスセラなヘしゆによマつシせの" data-seed-lessons='{"0001-sumimasen-and-kudasai": {"right": 3, "total": 3, "on": "2026-07-05"}, "0002-numbers-and-prices": {"right": 5, "total": 5, "on": "2026-07-05"}, "0003-greetings": {"right": 5, "total": 5, "on": "2026-07-05"}, "0004-arimasu-ka-and-doko": {"right": 5, "total": 5, "on": "2026-07-05"}, "0005-understanding-directions": {"started": true, "on": "2026-07-05"}, "0006-kana-diagnostic": {"right": 67, "total": 92, "on": "2026-08-13"}}'></div>
 <h1>Japanese</h1>
 <div class="lesson-meta">Conversational Japanese for travel · two tracks</div>
 
@@ -81,14 +90,15 @@
 <p id="status" class="idx-sub"></p>
 
 <h2>Reading track</h2>
-<ul class="idx">
+<ul class="idx" id="reading">
 <li><a href="lessons/0006-kana-diagnostic.html" data-lesson="0006-kana-diagnostic">Lesson 6 · The Kana Leech Hunt</a> <span class="idx-note">the cold full-92 measurement</span></li>
 <li><a href="lessons/0007-the-fu-trap.html" data-lesson="0007-the-fu-trap">Lesson 7 · The fu Trap</a> <span class="idx-note">the katakana hook family</span></li>
-<li><a href="reference/kana-confusables.html" data-lesson="kana-confusables">Reference · Confusable Kana</a> <span class="idx-note">the ~20 pairs, one rule each</span></li>
+<li><a href="reference/kana-confusables.html">Reference · Confusable Kana</a> <span class="idx-note">the ~20 pairs, one rule each</span></li>
 </ul>
 
 <h2>Speaking track</h2>
-<ul class="idx">
+<p id="stale" class="idx-stale" hidden></p>
+<ul class="idx" id="speaking">
 <li><a href="lessons/0001-sumimasen-and-kudasai.html" data-lesson="0001-sumimasen-and-kudasai">Lesson 1 · Sumimasen + Kudasai</a></li>
 <li><a href="lessons/0002-numbers-and-prices.html" data-lesson="0002-numbers-and-prices">Lesson 2 · Numbers + Prices</a></li>
 <li><a href="lessons/0003-greetings.html" data-lesson="0003-greetings">Lesson 3 · Greetings</a></li>
