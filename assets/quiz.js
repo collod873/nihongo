@@ -94,6 +94,15 @@
 
   function showSummary() {
     var score = results.filter(function (r) { return r.correct; }).length;
+
+    // Persist before rendering. Lesson results used to live only in this
+    // closure, so closing the tab without hitting copy threw the whole lesson
+    // away — and "I did three lessons this week" was unreportable.
+    window.Progress.completeLesson(
+      window.Progress.lessonId(), document.title, score, results.length,
+      results.filter(function (r) { return !r.correct; }).map(function (r) { return "Q" + r.n; })
+    );
+
     var box = document.createElement("div");
     box.className = "quiz-summary";
 

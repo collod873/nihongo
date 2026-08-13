@@ -15,6 +15,10 @@
 <meta name="apple-mobile-web-app-title" content="Japanese">
 <title>Japanese</title>
 <link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/kana-drill.css">
+<script src="assets/progress.js"></script>
+<script src="assets/kana-drill.js"></script>
+<script src="assets/home.js"></script>
 <style>
 .idx { list-style: none; padding: 0; margin: .6rem 0; }
 .idx li { padding: .5rem 0; border-bottom: 1px solid var(--rule); }
@@ -32,31 +36,76 @@
   margin-top: .8rem;
 }
 .idx-sub { color: var(--muted); font-size: .92rem; margin-top: .5rem; }
+.idx-next { font-weight: 700; margin-top: .9rem; }
+.idx-warn {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: .7rem .9rem;
+  font-size: .92rem;
+}
+.idx-state {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: .1rem .45rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  margin-left: .5rem;
+  white-space: nowrap;
+}
+.idx-state.is-new { border-color: var(--accent); color: var(--accent); }
+.idx-state.is-done { border-color: var(--win); color: var(--win); }
+.idx-restore {
+  width: 100%;
+  min-height: 6rem;
+  font-family: inherit;
+  font-size: .9rem;
+  padding: .6rem .7rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--ink);
+  margin-top: .6rem;
+}
 </style>
 </head>
 <body>
 <h1>Japanese</h1>
 <div class="lesson-meta">Conversational Japanese for travel · two tracks</div>
 
+<p id="warn" class="idx-warn" hidden></p>
+
 <p><a class="idx-cta" href="reference/kana-trainer.html">Drill kana now</a></p>
-<p class="idx-sub">Five minutes, adaptive, weighted toward what you actually miss.
-Progress saves on this device.</p>
+<p id="next" class="idx-next"></p>
+<p id="status" class="idx-sub"></p>
 
 <h2>Reading track</h2>
 <ul class="idx">
-<li><a href="lessons/0006-kana-diagnostic.html">Lesson 6 · The Kana Leech Hunt</a> <span class="idx-note">the cold full-92 measurement</span></li>
-<li><a href="lessons/0007-the-fu-trap.html">Lesson 7 · The fu Trap</a> <span class="idx-note">the katakana hook family</span></li>
-<li><a href="reference/kana-confusables.html">Reference · Confusable Kana</a> <span class="idx-note">the ~20 pairs, one rule each</span></li>
+<li><a href="lessons/0006-kana-diagnostic.html" data-lesson="0006-kana-diagnostic">Lesson 6 · The Kana Leech Hunt</a> <span class="idx-note">the cold full-92 measurement</span></li>
+<li><a href="lessons/0007-the-fu-trap.html" data-lesson="0007-the-fu-trap">Lesson 7 · The fu Trap</a> <span class="idx-note">the katakana hook family</span></li>
+<li><a href="reference/kana-confusables.html" data-lesson="kana-confusables">Reference · Confusable Kana</a> <span class="idx-note">the ~20 pairs, one rule each</span></li>
 </ul>
 
 <h2>Speaking track</h2>
 <ul class="idx">
-<li><a href="lessons/0001-sumimasen-and-kudasai.html">Lesson 1 · Sumimasen + Kudasai</a></li>
-<li><a href="lessons/0002-numbers-and-prices.html">Lesson 2 · Numbers + Prices</a></li>
-<li><a href="lessons/0003-greetings.html">Lesson 3 · Greetings</a></li>
-<li><a href="lessons/0004-arimasu-ka-and-doko.html">Lesson 4 · Do You Have…? Where Is…?</a></li>
-<li><a href="lessons/0005-understanding-directions.html">Lesson 5 · Understanding Directions</a> <span class="idx-note">not yet completed</span></li>
+<li><a href="lessons/0001-sumimasen-and-kudasai.html" data-lesson="0001-sumimasen-and-kudasai">Lesson 1 · Sumimasen + Kudasai</a></li>
+<li><a href="lessons/0002-numbers-and-prices.html" data-lesson="0002-numbers-and-prices">Lesson 2 · Numbers + Prices</a></li>
+<li><a href="lessons/0003-greetings.html" data-lesson="0003-greetings">Lesson 3 · Greetings</a></li>
+<li><a href="lessons/0004-arimasu-ka-and-doko.html" data-lesson="0004-arimasu-ka-and-doko">Lesson 4 · Do You Have…? Where Is…?</a></li>
+<li><a href="lessons/0005-understanding-directions.html" data-lesson="0005-understanding-directions">Lesson 5 · Understanding Directions</a></li>
 </ul>
+
+<h2>Send progress to Claude</h2>
+<p class="idx-sub">Everything since your last paste — drills, lessons, what you
+mastered, what slipped. Paste it into any Claude session.</p>
+<p>
+  <button id="export" class="copy-results-btn">Copy everything for Claude</button>
+  <button id="restore" class="kd-again">Restore from a paste</button>
+</p>
+<textarea id="restore-box" class="idx-restore" hidden
+  placeholder="Paste a progress export here, then tap Restore again."></textarea>
+<pre id="export-raw" class="quiz-summary-raw" hidden></pre>
 
 <footer>
 <p>Add this to your home screen and it works offline — on a plane, on the train,

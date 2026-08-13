@@ -194,24 +194,12 @@
 
   // ---- Persistence ------------------------------------------------------
 
-  function load() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
-  }
-  function save(st) {
-    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
-  }
-  // localStorage can *throw* in a sandboxed frame, and load() swallows it and
-  // returns {}. A blocked store is then indistinguishable from a first-ever run,
-  // forever — leech weighting and mastery silently never accumulate. Probe it so
-  // the results paste answers the question instead of leaving it ambiguous.
-  function persistOK() {
-    try {
-      localStorage.setItem(KEY + "-probe", "1");
-      var ok = localStorage.getItem(KEY + "-probe") === "1";
-      localStorage.removeItem(KEY + "-probe");
-      return ok;
-    } catch (e) { return false; }
-  }
+  // Storage belongs to progress.js now — the drill is one writer among several,
+  // not the owner. Per-kana stats keep exactly the shape they always had, so
+  // everything downstream of load()/save() is unchanged.
+  function load() { return window.Progress.kana(); }
+  function save(st) { window.Progress.saveKana(st); }
+  function persistOK() { return window.Progress.writable(); }
   function slot(st, kana) {
     if (!st[kana]) st[kana] = { n: 0, ok: 0, streak: 0, lapses: 0, last: 0 };
     return st[kana];
@@ -501,6 +489,7 @@
       var fast = ms < FAST_MS;
 
       var s = slot(st, current.kana);
+      var wasMastered = isMastered(s);
       s.n++;
       s.last = ms;
       if (ok) {
@@ -515,6 +504,7 @@
           forced.push(mistook);   // contrast injection
         }
       }
+      window.Progress.noteKana(current.kana, s, wasMastered);
       save(st);
 
       log.push({
@@ -572,6 +562,11 @@
       var solid = log.filter(function (r) { return r.ok && r.fast; }).length;
       var shaky = log.filter(function (r) { return r.ok && !r.fast; });
       var missed = log.filter(function (r) { return !r.ok; });
+
+      // Recorded here rather than per-answer: a session is the unit he'd
+      // recognise, and it's what the delta in the bulk export reads.
+      window.Progress.noteDrill(mode, window.Progress.lessonId(), right, log.length,
+        solid, missed.map(function (r) { return r.kana; }));
 
       stage.innerHTML = "";
       var box = document.createElement("div");
@@ -723,7 +718,8 @@
   // Exposed so a host page can switch modes or reset progress without a reload.
   window.KanaDrill = {
     build: build,
-    reset: function () { try { localStorage.removeItem(KEY); } catch (e) {} },
+    total: CARDS.length,
+    reset: function () { window.Progress.reset(); },
     stats: function () {
       var st = load();
       // Fall back to the page's seed so a device that stores nothing still
