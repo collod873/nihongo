@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#b7282e" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191714" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Japanese">
+<title>Kana Trainer</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/kana-drill.css">
+<script src="../assets/kana-drill.js"></script>
+</head>
+<body>
+<h1>Kana Trainer</h1>
+<div class="lesson-meta">Reference tool · 5 minutes a day · Remembers your leeches between sessions</div>
+
+<p>Typed recall, timed. Under 1.8 seconds counts as solid; slower stays in rotation. Miss a kana with a lookalike twin and the twin is queued a couple of cards later, so you have to tell them apart rather than get lucky. Progress is stored in this browser — <strong>bookmark this page and come back to the same one</strong>.</p>
+
+<div class="kd-modes">
+  <button class="kd-mode is-on" data-m="drill" data-c="40">Daily drill · 40</button>
+  <button class="kd-mode" data-m="confusables" data-c="30">Confusables only · 30</button>
+  <button class="kd-mode" data-m="diagnostic">Full 92</button>
+</div>
+
+<!-- Seed from the 2026-08-13 clean full-92 (learning record 0008). iOS blocks
+     storage in the artifact frame, so the drill can't rely on remembering
+     anything — this makes it correctly weighted on a cold start. Refresh both
+     lists from each results paste. -->
+<div id="kd-host"
+     data-seed-miss="チみソムアれヲナぬモたユノまくレヌツわミけワサニフ"
+     data-seed-slow="をちイクスセラなヘしゆによマつシせの">
+  <div class="kana-drill" data-mode="drill" data-count="40"
+       data-seed-miss="チみソムアれヲナぬモたユノまくレヌツわミけワサニフ"
+       data-seed-slow="をちイクスセラなヘしゆによマつシせの"></div>
+</div>
+
+<p class="kd-stats" id="kd-stats"></p>
+
+<h2>How the three modes differ</h2>
+
+<table>
+  <tr><th>Mode</th><th>Picks from</th><th>Use it when</th></tr>
+  <tr><td>Daily drill</td><td>All 92, weighted — leeches ~20× more often than mastered ones</td><td>Every day. This is the default.</td></tr>
+  <tr><td>Confusables only</td><td>Just the lookalike pairs you haven't mastered</td><td>When the drill keeps surfacing the same twins.</td></tr>
+  <tr><td>Full 92</td><td>Everything once, shuffled, minimal feedback</td><td>Monthly, cold, to re-measure. Don't warm up first.</td></tr>
+</table>
+
+<div class="callout"><strong>Scoring, so you can trust it:</strong> a kana is mastered after <strong>three consecutive fast-and-correct</strong> answers. Correct-but-slow resets you to one — it's still knowledge you're reconstructing. Any miss resets to zero and adds a lifetime lapse; two lapses marks it a leech and it starts appearing constantly until it's clean.</div>
+
+<p>See <a href="../reference/kana-confusables.html">Confusable Pairs</a> for the discrimination rules, and <a href="../lessons/0006-kana-diagnostic.html">Lesson 6</a> for why this works the way it does.</p>
+
+<p>Hit <strong>Copy results for Claude</strong> after any session and paste it in — that's how the next reading lesson gets built.</p>
+
+<footer>
+  <p>Questions? Ask your teacher — that's Claude, any session, any device.</p>
+  <p><button class="kd-reset" id="kd-reset">Reset all progress</button> — wipes your leech list and mastery counts. Only for starting clean.</p>
+</footer>
+
+<style>
+  .kd-modes { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1.4rem 0 0; }
+  .kd-mode {
+    font-family: inherit; font-size: .9rem;
+    padding: .4rem .85rem;
+    border: 1px solid var(--rule); border-radius: 999px;
+    background: var(--card); color: var(--ink); cursor: pointer;
+  }
+  .kd-mode:hover { border-color: var(--accent); }
+  .kd-mode.is-on { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .kd-stats { font-size: .85rem; color: var(--muted); text-align: center; margin: -.6rem 0 0; }
+  .kd-reset {
+    font-family: inherit; font-size: .85rem;
+    padding: .25rem .7rem;
+    border: 1px solid var(--rule); border-radius: 6px;
+    background: var(--card); color: var(--muted); cursor: pointer;
+  }
+  .kd-reset:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+
+<script>
+  (function () {
+    var host = document.getElementById("kd-host");
+    var stats = document.getElementById("kd-stats");
+
+    function showStats() {
+      var s = window.KanaDrill.stats();
+      stats.textContent = s.seen
+        ? s.mastered + " / 92 mastered · " + s.leeches.length + " leech" +
+          (s.leeches.length === 1 ? "" : "es") + " in rotation" +
+          (s.leeches.length ? "  " + s.leeches.join(" ") : "")
+        : "No history yet — the first session builds your baseline.";
+    }
+
+    function start(mode, count) {
+      host.innerHTML = "";
+      var d = document.createElement("div");
+      d.className = "kana-drill";
+      d.dataset.mode = mode;
+      if (count) d.dataset.count = count;
+      // Carry the seed onto every mode switch, not just the initial drill.
+      d.dataset.seedMiss = host.dataset.seedMiss;
+      d.dataset.seedSlow = host.dataset.seedSlow;
+      host.appendChild(d);
+      window.KanaDrill.build(d);
+      showStats();
+    }
+
+    document.querySelectorAll(".kd-mode").forEach(function (b) {
+      b.addEventListener("click", function () {
+        document.querySelectorAll(".kd-mode").forEach(function (o) { o.classList.remove("is-on"); });
+        b.classList.add("is-on");
+        start(b.dataset.m, b.dataset.c);
+      });
+    });
+
+    document.getElementById("kd-reset").addEventListener("click", function () {
+      if (!confirm("Wipe your leech list and mastery counts? This can't be undone.")) return;
+      window.KanaDrill.reset();
+      showStats();
+    });
+
+    document.addEventListener("DOMContentLoaded", showStats);
+    if (document.readyState !== "loading") showStats();
+  })();
+</script>
+<script src="../assets/app.js"></script>
+</body>
+</html>

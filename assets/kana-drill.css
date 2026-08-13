@@ -1,0 +1,192 @@
+/* Kana drill component — pairs with assets/kana-drill.js.
+   Inherits palette from style.css; adds nothing to :root. */
+
+.kd-stage {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 1.2rem 1.25rem 1.6rem;
+  margin: 1.4rem 0;
+  text-align: center;
+  min-height: 21rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: text;
+}
+
+.kd-prog {
+  font-size: .78rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .5rem;
+}
+
+.kd-face {
+  font-size: 7.5rem;
+  line-height: 1.15;
+  margin: .4rem 0 .8rem;
+  transition: color .12s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.kd-face.kd-ok { color: var(--win); }
+.kd-face.kd-no { color: var(--accent); }
+
+.kd-form { width: 100%; max-width: 15rem; }
+
+.kd-input {
+  font-family: var(--serif);
+  /* >=16px or iOS zooms the viewport on focus */
+  font-size: 1.35rem;
+  text-align: center;
+  width: 100%;
+  padding: .5rem .6rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: none;
+  border-bottom: 2px solid var(--rule);
+  border-radius: 0;
+  outline: none;
+  letter-spacing: .06em;
+}
+.kd-input:focus { border-bottom-color: var(--accent); }
+.kd-input:disabled { opacity: .45; }
+
+/* Mastery-window indicator. Drains over FAST_MS; empty just means the answer
+   gets logged as slow, never that the card is over. */
+.kd-timer {
+  width: 100%;
+  max-width: 15rem;
+  height: 2px;
+  margin-top: .55rem;
+  background: var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: opacity .2s ease;
+}
+.kd-timer i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--win);
+  transform-origin: left center;
+  transform: scaleX(1);
+}
+
+.kd-fb {
+  margin-top: .9rem;
+  font-size: .95rem;
+  min-height: 4.2rem;
+  max-width: 26rem;
+  line-height: 1.5;
+  visibility: hidden;
+}
+.kd-fb.show { visibility: visible; }
+.kd-cont {
+  margin-top: .5rem;
+  font-size: .78rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* --- idle gate --- */
+.kd-start {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
+  flex: 1;
+}
+.kd-stage.kd-idle .kd-start { display: flex; }
+.kd-stage.kd-idle .kd-prog,
+.kd-stage.kd-idle .kd-face,
+.kd-stage.kd-idle .kd-form,
+.kd-stage.kd-idle .kd-timer,
+.kd-stage.kd-idle .kd-fb { display: none; }
+.kd-stage.kd-idle { cursor: default; justify-content: center; }
+
+.kd-start-btn {
+  font-family: inherit;
+  font-size: 1.15rem;
+  padding: .7rem 2.4rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--paper);
+  cursor: pointer;
+}
+.kd-start-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.kd-start-note {
+  font-size: .85rem;
+  color: var(--muted);
+  max-width: 18rem;
+  text-align: center;
+}
+
+/* --- summary --- */
+.kd-summary { width: 100%; text-align: left; }
+.kd-summary-score {
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-bottom: .3rem;
+}
+.kd-summary p {
+  margin: 0 0 1rem;
+  font-size: .92rem;
+  color: var(--muted);
+}
+
+.kd-list { margin: 0 0 1.2rem; }
+.kd-list h3 {
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin: 0 0 .3rem;
+  font-weight: 700;
+}
+.kd-row {
+  display: flex;
+  align-items: baseline;
+  gap: .7rem;
+  padding: .3rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.kd-row-kana { font-size: 1.6rem; min-width: 2rem; }
+.kd-row-ans { font-weight: 700; min-width: 3rem; }
+.kd-row-note { color: var(--muted); font-size: .88rem; }
+
+/* Shown only when the device refuses to store progress — a real condition on
+   iOS, where the artifact frame's storage is blocked. Informational, not an
+   error: the drill still works, it just can't remember. */
+.kd-warn {
+  margin: 1rem 0 .2rem;
+  padding: .7rem .9rem;
+  border-left: 3px solid var(--accent);
+  background: var(--card);
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+.kd-again {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: .55rem 1.1rem;
+  margin-left: .5rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+}
+.kd-again:hover { border-color: var(--accent); }
+
+@media (max-width: 30rem) {
+  .kd-face { font-size: 6rem; }
+  .kd-stage { min-height: 19rem; padding: 1rem .9rem 1.3rem; }
+}
