@@ -185,7 +185,28 @@ footer {
   font-size: .9rem; color: var(--muted);
 }
 
+/* Way home. Installed to the home screen there is no browser back button, so
+   without these a lesson is a room with no door. */
+.nav-home {
+  display: inline-block;
+  margin-bottom: 1.4rem;
+  font-size: .85rem;
+  text-decoration: none;
+  letter-spacing: .02em;
+}
+.nav-home:hover { text-decoration: underline; }
+.nav-home-bottom { margin-top: 2rem; }
+.nav-home-bottom a {
+  display: inline-block;
+  text-decoration: none;
+  font-weight: 700;
+  padding: .7rem 1.3rem;   /* a thumb target, not a hairline of text */
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+}
+.nav-home-bottom a:hover { background: var(--accent-soft); }
+
 @media print {
   body { max-width: none; padding: 0; }
-  .speak-btn, .quiz { display: none; }
+  .speak-btn, .quiz, .nav-home, .nav-home-bottom { display: none; }
 }
