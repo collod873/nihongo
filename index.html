@@ -20,11 +20,28 @@
 <script src="assets/kana-drill.js"></script>
 <script src="assets/home.js"></script>
 <style>
+/* Rows wrap as a flex line so a long title never shoves its badge onto a line
+   of its own on a narrow phone. */
 .idx { list-style: none; padding: 0; margin: .6rem 0; }
-.idx li { padding: .5rem 0; border-bottom: 1px solid var(--rule); }
-.idx a { text-decoration: none; font-weight: 700; }
+.idx li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .35rem .6rem;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.idx a { text-decoration: none; font-weight: 700; flex: 1 1 auto; }
 .idx a:hover { text-decoration: underline; }
-.idx-note { color: var(--muted); font-size: .85rem; font-weight: 400; }
+.idx-note { color: var(--muted); font-size: .85rem; font-weight: 400; flex: 1 0 100%; }
+.idx-mins { color: var(--muted); font-size: .78rem; white-space: nowrap; }
+.idx-details { margin: 1.6rem 0; }
+.idx-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: .4rem 0;
+  color: var(--accent);
+}
 .idx-cta {
   display: inline-block;
   background: var(--accent);
@@ -57,13 +74,8 @@
 .idx-state.is-new { border-color: var(--accent); color: var(--accent); }
 .idx-state.is-done { border-color: var(--win); color: var(--win); }
 .idx-state.is-part { border-color: var(--muted); color: var(--ink); }
-.idx-stale {
-  color: var(--muted);
-  font-size: .9rem;
-  border-left: 3px solid var(--rule);
-  padding: .1rem 0 .1rem .8rem;
-  margin: .6rem 0 0;
-}
+/* Gone quiet long enough to be worth revisiting — deliberately not green. */
+.idx-state.is-stale { border-color: var(--accent); color: var(--muted); }
 .idx-restore {
   width: 100%;
   min-height: 6rem;
@@ -81,41 +93,51 @@
 <body>
 <div id="seed" hidden data-seed-miss="チみソムアれヲナぬモたユノまくレヌツわミけワサニフ" data-seed-slow="をちイクスセラなヘしゆによマつシせの" data-seed-lessons='{"0001-sumimasen-and-kudasai": {"right": 3, "total": 3, "on": "2026-07-05"}, "0002-numbers-and-prices": {"right": 5, "total": 5, "on": "2026-07-05"}, "0003-greetings": {"right": 5, "total": 5, "on": "2026-07-05"}, "0004-arimasu-ka-and-doko": {"right": 5, "total": 5, "on": "2026-07-05"}, "0005-understanding-directions": {"started": true, "on": "2026-07-05"}, "0006-kana-diagnostic": {"right": 67, "total": 92, "on": "2026-08-13"}}'></div>
 <h1>Japanese</h1>
-<div class="lesson-meta">Conversational Japanese for travel · two tracks</div>
+<div class="lesson-meta">Conversational Japanese for travel</div>
 
 <p id="warn" class="idx-warn" hidden></p>
 
-<p><a class="idx-cta" href="reference/kana-trainer.html">Drill kana now</a></p>
+<h2>Today</h2>
+<p><a class="idx-cta" href="reference/kana-trainer.html">Drill kana</a></p>
 <p id="next" class="idx-next"></p>
 <p id="status" class="idx-sub"></p>
+<ul class="idx" id="todo"></ul>
 
-<h2>Reading track</h2>
-<ul class="idx" id="reading">
-<li><a href="lessons/0006-kana-diagnostic.html" data-lesson="0006-kana-diagnostic">Lesson 6 · The Kana Leech Hunt</a> <span class="idx-note">the cold full-92 measurement</span></li>
-<li><a href="lessons/0007-the-fu-trap.html" data-lesson="0007-the-fu-trap">Lesson 7 · The fu Trap</a> <span class="idx-note">the katakana hook family</span></li>
-<li><a href="reference/kana-confusables.html">Reference · Confusable Kana</a> <span class="idx-note">the ~20 pairs, one rule each</span></li>
-</ul>
+<h2>Review</h2>
+<p class="idx-sub">Oldest first — nothing here is finished, it just hasn't been
+seen in a while.</p>
+<ul class="idx" id="review"></ul>
+<p id="review-empty" class="idx-sub" hidden>Nothing to review yet.</p>
 
-<h2>Speaking track</h2>
-<p id="stale" class="idx-stale" hidden></p>
-<ul class="idx" id="speaking">
-<li><a href="lessons/0001-sumimasen-and-kudasai.html" data-lesson="0001-sumimasen-and-kudasai">Lesson 1 · Sumimasen + Kudasai</a></li>
-<li><a href="lessons/0002-numbers-and-prices.html" data-lesson="0002-numbers-and-prices">Lesson 2 · Numbers + Prices</a></li>
-<li><a href="lessons/0003-greetings.html" data-lesson="0003-greetings">Lesson 3 · Greetings</a></li>
-<li><a href="lessons/0004-arimasu-ka-and-doko.html" data-lesson="0004-arimasu-ka-and-doko">Lesson 4 · Do You Have…? Where Is…?</a></li>
-<li><a href="lessons/0005-understanding-directions.html" data-lesson="0005-understanding-directions">Lesson 5 · Understanding Directions</a></li>
-</ul>
+<details class="idx-details">
+  <summary>All lessons</summary>
+  <ul class="idx" id="catalogue">
+<li data-lesson="0001-sumimasen-and-kudasai" data-track="speaking" data-mins="12 min"><a href="lessons/0001-sumimasen-and-kudasai.html">Lesson 1 · Sumimasen + Kudasai</a><span class="idx-mins">12 min</span></li>
+<li data-lesson="0002-numbers-and-prices" data-track="speaking" data-mins="13 min"><a href="lessons/0002-numbers-and-prices.html">Lesson 2 · Numbers + Prices</a><span class="idx-mins">13 min</span></li>
+<li data-lesson="0003-greetings" data-track="speaking" data-mins="13 min"><a href="lessons/0003-greetings.html">Lesson 3 · Greetings</a><span class="idx-mins">13 min</span></li>
+<li data-lesson="0004-arimasu-ka-and-doko" data-track="speaking" data-mins="14 min"><a href="lessons/0004-arimasu-ka-and-doko.html">Lesson 4 · Do You Have…? Where Is…?</a><span class="idx-mins">14 min</span></li>
+<li data-lesson="0005-understanding-directions" data-track="speaking" data-mins="14 min"><a href="lessons/0005-understanding-directions.html">Lesson 5 · Understanding Directions</a><span class="idx-mins">14 min</span></li>
+<li data-lesson="0006-kana-diagnostic" data-track="reading" data-mins="8 min"><a href="lessons/0006-kana-diagnostic.html">Lesson 6 · The Kana Leech Hunt</a><span class="idx-note">the cold full-92 measurement</span><span class="idx-mins">8 min</span></li>
+<li data-lesson="0007-the-fu-trap" data-track="reading" data-mins="15 min"><a href="lessons/0007-the-fu-trap.html">Lesson 7 · The fu Trap</a><span class="idx-note">the katakana hook family</span><span class="idx-mins">15 min</span></li>
+<li data-lesson="0008-what-survived" data-track="speaking" data-mins="15 min"><a href="lessons/0008-what-survived.html">Lesson 8 · What Survived</a><span class="idx-note">cold review of lessons 1–5</span><span class="idx-mins">15 min</span></li>
+<li data-ref="1"><a href="reference/kana-confusables.html">Reference · Confusable Kana</a><span class="idx-note">the ~20 pairs, one rule each</span></li>
+  </ul>
+</details>
 
 <h2>Send progress to Claude</h2>
 <p class="idx-sub">Everything since your last paste — drills, lessons, what you
 mastered, what slipped. Paste it into any Claude session.</p>
-<p>
-  <button id="export" class="copy-results-btn">Copy everything for Claude</button>
-  <button id="restore" class="kd-again">Restore from a paste</button>
-</p>
-<textarea id="restore-box" class="idx-restore" hidden
-  placeholder="Paste a progress export here, then tap Restore again."></textarea>
+<p><button id="export" class="copy-results-btn">Copy everything for Claude</button></p>
 <pre id="export-raw" class="quiz-summary-raw" hidden></pre>
+
+<details class="idx-details">
+  <summary>Restore from a backup</summary>
+  <p class="idx-sub">Replaces everything on this device with a pasted export.
+  Only for a new phone or after clearing Safari.</p>
+  <textarea id="restore-box" class="idx-restore"
+    placeholder="Paste a progress export here."></textarea>
+  <p><button id="restore" class="kd-again">Restore</button></p>
+</details>
 
 <footer>
 <p>Add this to your home screen and it works offline — on a plane, on the train,
