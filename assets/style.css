@@ -92,6 +92,11 @@ h2 {
 
 .romaji { color: var(--muted); font-style: italic; }
 
+/* A whole word in one table cell. Without this a 390px phone breaks コンビニ
+   into コンビ / ニ, which teaches exactly the wrong chunking in a lesson about
+   reading words. Squeeze the other columns instead. */
+.jp-word { white-space: nowrap; }
+
 .phrase-card {
   border: 1px solid var(--rule);
   border-left: 4px solid var(--accent);
