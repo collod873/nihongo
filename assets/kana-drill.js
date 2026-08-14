@@ -46,7 +46,7 @@
     // hiragana
     "る": "る closes into a loop at the bottom. ろ doesn't.",
     "ろ": "ろ ends open — no loop. る has the loop.",
-    "ぬ": "ぬ ends in a loop. め is the same shape with no loop.",
+    "ぬ": "ぬ has no straight left stem — it's all curves. ね, わ and れ all have one. (め is ぬ with no loop.)",
     "め": "め has no loop. ぬ does.",
     "さ": "さ has one crossbar. き has two.",
     "き": "き has two crossbars. さ has one.",
@@ -73,15 +73,21 @@
     "ツ": "ツ's marks sit on TOP and sweep DOWN — same side as ソ.",
     "ク": "ク has a short stroke at top-left then a long diagonal. ケ's diagonal cuts across.",
     "ケ": "ケ has a stroke cutting across the diagonal. ク doesn't.",
-    "ワ": "ワ has a left vertical and a square shoulder. フ has neither — it's one bend.",
+    // ワ survived Lesson 7 as the last of the "fu" hub (record 0009). Every other
+    // member differs from フ by something ADDED — a leg, a crossing stroke, a top
+    // bar — and those resolved. ワ's difference is structural, so the old tip
+    // ("フ plus a left vertical") kept フ activated while he tried to rule it out.
+    // Both tips now hang on one feature he can check in the moment: how many ends
+    // of the top bar come down.
+    "ワ": "ワ's top bar comes down at BOTH ends — left side closed. フ's comes down at one.",
     "ウ": "ウ wears the hat. ワ is bare — same relationship as う/つ.",
-    "フ": "フ is one plain bend, nothing else. ワ adds a left vertical, ラ adds a top stroke, ス adds a leg.",
+    "フ": "フ's top bar comes down at ONE end only — the left stays open. ワ closes both.",
     "ラ": "ラ's top stroke is short and stops early. ヲ's runs the full width. フ has none.",
     "ス": "ス is フ with a leg kicking out below-left. ヌ is ス with a stroke crossing it.",
     "ヌ": "ヌ is ス with a stroke crossing through. フ has no leg at all.",
-    "ナ": "ナ is a plus/cross shape. メ is an X, ネ adds a flat top stroke.",
+    "ナ": "ナ is a plain plus. メ is an X. Add a tick on top and it's チ; a tick and a foot, ネ.",
     "メ": "メ is an X. ナ is a plus.",
-    "チ": "チ's top stroke slants across. テ's is flat and separate; ネ has both a flat top AND a foot.",
+    "チ": "チ = ナ plus a tick above the bar. Add a foot at the bottom left and it's ネ. テ's top is a second flat bar.",
     "テ": "テ has a flat top line. チ's top stroke slants across.",
     "ホ": "ホ has two loose side dots. オ is connected through.",
     "オ": "オ is connected. ホ has separate side dots.",
@@ -103,7 +109,7 @@
     "や": "や (hiragana) vs ヤ (katakana) — same sound either way.",
     "も": "も (hiragana) vs モ (katakana) — same sound either way.",
     // added from the 2026-08-13 diagnostic — pairs actually swapped in practice
-    "ネ": "ネ has a flat stroke across the top. ヌ has none, and ス doesn't cross at all.",
+    "ネ": "ネ is the busiest one — tick on top, bar, stem AND a foot at the bottom left. チ has no foot; ヌ and ス have no bar.",
     "サ": "サ has two short verticals through the bar. セ has one vertical and a curling base.",
     "ヨ": "ヨ is three bars open to the left. コ is two. ユ has the long base bar.",
     "ハ": "ハ is two separate strokes leaning apart. ホ has a vertical running through it.",
@@ -719,6 +725,9 @@
   window.KanaDrill = {
     build: build,
     total: CARDS.length,
+    // Exposed so a lesson's data-family can be checked against the real table
+    // instead of a copy of it — a misspelled family silently drills all 92.
+    family: function (name) { return FAMILIES[name] || ""; },
     reset: function () { window.Progress.reset(); },
     stats: function () {
       var st = load();

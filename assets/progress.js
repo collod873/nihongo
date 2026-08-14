@@ -289,11 +289,21 @@
           L.push("  Lesson completed: " + s.page + " — " + s.right + "/" + s.total +
             (s.missed && s.missed.length ? "  missed " + s.missed.join(", ") : ""));
         });
-        var newlyMastered = kanaKeys.filter(function (k) {
-          return st.kana[k].masteredAt > since;
-        });
+        // masteredAt is a permanent stamp; `mastered` is streak >= 3 right now.
+        // A slow-but-correct answer caps streak at 1, so a kana can hold the
+        // stamp while no longer counting — and the old line reported フ as newly
+        // mastered four lines above "Mastered: 4/92", in a paste that showed フ
+        // at 3.8 seconds (record 0009). Same failure as a lesson score with no
+        // age on it: a number that reads as mastery when it isn't. Split them.
+        var reached = kanaKeys.filter(function (k) { return st.kana[k].masteredAt > since; });
+        var newlyMastered = reached.filter(function (k) { return st.kana[k].streak >= 3; });
+        var wentSlow = reached.filter(function (k) { return st.kana[k].streak < 3; });
         if (newlyMastered.length) {
           L.push("  Newly mastered (" + newlyMastered.length + "): " + newlyMastered.join(" "));
+        }
+        if (wentSlow.length) {
+          L.push("  Mastered then went slow — correct but no longer fast (" +
+            wentSlow.length + "): " + wentSlow.join(" "));
         }
         var regressed = kanaKeys.filter(function (k) {
           return (st.kana[k].lastRelapseAt || 0) > since;

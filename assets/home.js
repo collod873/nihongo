@@ -54,10 +54,20 @@
     else if (live && live.lastOpenedAt) at = live.lastOpenedAt;
     if (!at && seed && seed.on) at = Date.parse(seed.on + "T12:00:00Z") || 0;
 
-    var done = !!(live && live.completed) || !!(seed && seed.total);
+    // A drill lesson has no quiz, so `completed` never gets set on it — Lesson 7
+    // read "unfinished" after he drilled it twice to 26/27. Its finishing move is
+    // a drill session logged against its own page id; use the newest one.
+    var drill = null;
+    window.Progress.all().sessions.forEach(function (s) {
+      if (s.kind !== "quiz" && s.page === id && (!drill || s.t > drill.t)) drill = s;
+    });
+    if (drill && drill.t > at) at = drill.t;
+
+    var done = !!(live && live.completed) || !!drill || !!(seed && seed.total);
     var started = !done && (!!(live && live.opened) || !!(seed && seed.started));
     var score = null;
     if (live && live.completed && live.total) score = live.right + "/" + live.total;
+    else if (drill) score = drill.right + "/" + drill.total;
     else if (seed && seed.total) score = seed.right + "/" + seed.total;
 
     return { id: id, li: li, track: li.dataset.track, mins: li.dataset.mins,
