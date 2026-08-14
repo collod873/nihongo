@@ -102,21 +102,50 @@
   // exports decode into the wrong columns. `last` is a latency in ms, not a
   // timestamp — it must not be rescaled.
   var KANA_ORDER = ["n", "ok", "streak", "lapses", "last", "masteredAt",
-                    "relapses", "lastRelapseAt"];
+                    "relapses", "lastRelapseAt", "wrong"];
   var KANA_TS = { masteredAt: 1, lastRelapseAt: 1 };
-  var SESSION_ORDER = ["t", "kind", "page", "right", "total", "solid", "missed"];
+  // `wrong` is a tally of what he actually TYPED when he missed this kana,
+  // encoded "me:4|nu:2". Record 0008's best finding — that his errors are
+  // attractor answers, not pairs — came from counting typed answers by hand off
+  // a chat paste. Nothing stored them, so by record 0011 his worst kana (ま, 24
+  // misses in 62 attempts) could not be diagnosed at all. Now it can.
+  var KANA_STR = { wrong: 1 };
+  var WRONG_KEPT = 3;   // top-N by count; the tail is noise and costs export bytes
+  var SESSION_ORDER = ["t", "kind", "page", "right", "total", "solid", "missed",
+                       "chose"];
   var SESSIONS_WITH_DETAIL = 10;
 
   function normalize(kana) {
     Object.keys(kana).forEach(function (c) {
       var s = kana[c];
-      KANA_ORDER.forEach(function (f) { s[f] = s[f] || 0; });
+      KANA_ORDER.forEach(function (f) { s[f] = s[f] || (KANA_STR[f] ? {} : 0); });
     });
     return kana;
   }
 
+  // {me:4, nu:2} <-> "me:4|nu:2". Kept as a string in the export so it costs one
+  // short field per kana instead of a nested object per kana.
+  function encodeWrong(o) {
+    return Object.keys(o || {})
+      .sort(function (a, b) { return o[b] - o[a]; })
+      .slice(0, WRONG_KEPT)
+      .map(function (k) { return k + ":" + o[k]; })
+      .join("|");
+  }
+
+  function decodeWrong(v) {
+    var o = {};
+    if (typeof v !== "string" || !v) return o;
+    v.split("|").forEach(function (part) {
+      var bits = part.split(":");
+      if (bits.length === 2 && bits[0]) o[bits[0]] = +bits[1] || 0;
+    });
+    return o;
+  }
+
   function encodeKana(s) {
     var row = KANA_ORDER.map(function (f) {
+      if (KANA_STR[f]) return encodeWrong(s[f]);
       var v = s[f] || 0;
       return KANA_TS[f] ? Math.floor(v / 1000) : v;
     });
@@ -127,8 +156,9 @@
   function decodeKana(row) {
     var s = {};
     KANA_ORDER.forEach(function (f, i) {
-      var v = row[i] || 0;
-      s[f] = KANA_TS[f] ? v * 1000 : v;
+      var v = row[i];
+      if (KANA_STR[f]) s[f] = decodeWrong(v);
+      else s[f] = KANA_TS[f] ? (v || 0) * 1000 : (v || 0);
     });
     return s;
   }
@@ -145,6 +175,7 @@
       var row = SESSION_ORDER.map(function (f) {
         if (f === "t") return Math.floor((sess.t || 0) / 1000);
         if (f === "missed") return i >= cut ? (sess.missed || []) : 0;
+        if (f === "chose") return i >= cut ? (sess.chose || []) : 0;
         return sess[f] || 0;
       });
       while (row.length && !row[row.length - 1]) row.pop();
@@ -168,6 +199,7 @@
         var v = row[i];
         if (f === "t") sess.t = (v || 0) * 1000;
         else if (f === "missed") sess.missed = Array.isArray(v) ? v : [];
+        else if (f === "chose") sess.chose = Array.isArray(v) ? v : [];
         else sess[f] = v || 0;
       });
       st.sessions.push(sess);
@@ -202,6 +234,14 @@
 
     // Called by the drill on every answer, so mastery/relapse history is
     // recorded once, here, instead of being re-derived by each caller.
+    // Called by the drill on a miss, with what he actually typed.
+    noteWrong: function (slot, typed) {
+      if (!typed) return slot;
+      if (!slot.wrong || typeof slot.wrong !== "object") slot.wrong = {};
+      slot.wrong[typed] = (slot.wrong[typed] || 0) + 1;
+      return slot;
+    },
+
     noteKana: function (k, slot, wasMastered) {
       if (slot.streak >= 3 && !slot.masteredAt) slot.masteredAt = now();
       // Losing a kana you had genuinely mastered is the single most useful
@@ -228,14 +268,15 @@
       write(st);
     },
 
-    completeLesson: function (id, title, right, total, missed) {
+    completeLesson: function (id, title, right, total, missed, chose) {
       var st = read();
       var l = st.lessons[id] || (st.lessons[id] = { title: title, opened: 1 });
       l.title = title || l.title;
       l.completed = (l.completed || 0) + 1;
       l.right = right; l.total = total; l.missed = missed; l.at = now();
       st.sessions.push({
-        t: now(), kind: "quiz", page: id, right: right, total: total, missed: missed
+        t: now(), kind: "quiz", page: id, right: right, total: total,
+        missed: missed, chose: chose || []
       });
       write(trim(st));
     },
@@ -312,6 +353,32 @@
           L.push("  REGRESSED — had mastered, then lost (" + regressed.length + "): " +
             regressed.join(" "));
         }
+      }
+
+      // Record 0008 found his misses were attractor answers — one romaji
+      // absorbing four shapes — by counting typed answers by hand. This does it
+      // every time, so a hub can never again hide behind a list of kana.
+      var typedTally = {};
+      kanaKeys.forEach(function (k) {
+        var w = st.kana[k].wrong;
+        if (!w || typeof w !== "object") return;
+        Object.keys(w).forEach(function (t) {
+          if (!typedTally[t]) typedTally[t] = { n: 0, shown: [] };
+          typedTally[t].n += w[t];
+          typedTally[t].shown.push(k);
+        });
+      });
+      var hubs = Object.keys(typedTally)
+        .filter(function (t) { return typedTally[t].shown.length > 1; })
+        .sort(function (a, b) { return typedTally[b].n - typedTally[a].n; })
+        .slice(0, 5);
+      if (hubs.length) {
+        L.push("");
+        L.push("WHAT YOU TYPED INSTEAD (one answer, several kana = a hub)");
+        hubs.forEach(function (t) {
+          L.push("  " + t + " — " + typedTally[t].n + "x, for " +
+            typedTally[t].shown.join(" "));
+        });
       }
 
       L.push("");

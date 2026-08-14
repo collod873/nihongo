@@ -504,6 +504,7 @@
       } else {
         s.streak = 0;
         s.lapses++;
+        window.Progress.noteWrong(s, typed);
         var mistook = LOOKUP[current.set][typed];
         if (mode !== "diagnostic" && mistook && PARTNERS[current.kana] &&
             PARTNERS[current.kana].indexOf(mistook) !== -1 && forced.indexOf(mistook) === -1) {

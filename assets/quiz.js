@@ -98,9 +98,15 @@
     // Persist before rendering. Lesson results used to live only in this
     // closure, so closing the tab without hitting copy threw the whole lesson
     // away — and "I did three lessons this week" was unreportable.
+    // What he CHOSE, not just which question he lost. Lesson 8 Q7 and Lesson 10
+    // Q9 offered the identical four question-frames; he missed both, and the
+    // export recorded only the question numbers — so which frame he reached for
+    // was unrecoverable (record 0011). Now it survives the bulk export.
+    var wrong = results.filter(function (r) { return !r.correct; });
     window.Progress.completeLesson(
       window.Progress.lessonId(), document.title, score, results.length,
-      results.filter(function (r) { return !r.correct; }).map(function (r) { return "Q" + r.n; })
+      wrong.map(function (r) { return "Q" + r.n; }),
+      wrong.map(function (r) { return r.chosen; })
     );
 
     var box = document.createElement("div");
