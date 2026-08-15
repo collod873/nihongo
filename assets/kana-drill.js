@@ -44,10 +44,11 @@
   // the learner is actually paying attention.
   var TIP = {
     // hiragana
-    "る": "る closes into a loop at the bottom. ろ doesn't.",
-    "ろ": "ろ ends open — no loop. る has the loop.",
+    "る": "る closes into a loop at the bottom. ろ doesn't. そ has neither — it kinks at the top.",
+    "ろ": "ろ = る with the loop left off — same flat top, same long diagonal. そ is the odd one: it kinks at the top and its tail just falls away.",
+    "そ": "そ kinks at the top and the tail falls away. ろ and る both start flat and run one long diagonal.",
     "ぬ": "ぬ has no straight left stem — it's all curves. ね, わ and れ all have one. (め is ぬ with no loop.)",
-    "め": "め has no loop. ぬ does.",
+    "め": "め has NO crossbar — nothing cuts through it. み does. (And ぬ is め plus a loop.)",
     "さ": "さ has one crossbar. き has two.",
     "き": "き has two crossbars. さ has one.",
     "ち": "ち is さ mirrored — the curve hangs to the right.",
@@ -127,7 +128,7 @@
     "ミ": "ミ is three separate strokes, stacked and shrinking. モ has a vertical through the bars.",
     "ニ": "ニ is two flat bars, nothing else. ノ is a single diagonal.",
     "レ": "レ is one stroke — down, then up to the right. リ is two separate strokes.",
-    "み": "み has a loop crossed by a tail. め is a plain X-and-loop, no crossbar.",
+    "み": "み has a CROSSBAR — one stroke cuts straight through it. め has nothing cutting through.",
     "く": "く is a sharp corner opening right. へ is a shallow corner opening down.",
     "を": "を has the extra left stroke on top. お is round; わ has no top bar."
   };
@@ -137,7 +138,7 @@
   // Groups marked (obs) came from the 2026-08-13 diagnostic — pairs actually
   // swapped in practice, several of them in both directions.
   var GROUPS = [
-    ["る", "ろ"], ["ぬ", "め", "ね"], ["さ", "き", "ち"], ["れ", "わ", "ね"],
+    ["る", "ろ", "そ"], ["ぬ", "め", "ね"], ["さ", "き", "ち"], ["れ", "わ", "ね"],
     ["は", "ほ", "ま"], ["う", "つ"], ["い", "り"], ["す", "お", "あ"], ["せ", "ち"],
     ["け", "せ"], ["た", "に"],                                    // (obs)
     ["ソ", "ン", "ノ"], ["シ", "ツ", "チ"], ["ク", "ケ", "ワ"], ["ウ", "ワ", "フ"],
