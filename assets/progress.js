@@ -346,12 +346,24 @@
           L.push("  Mastered then went slow — correct but no longer fast (" +
             wentSlow.length + "): " + wentSlow.join(" "));
         }
+        // A relapse is stamped the instant a streak breaks and is never cleared
+        // by recovery, so a flat "REGRESSED" list describes the first ten minutes
+        // of a session rather than the state of his knowledge. Twice now it has
+        // read as backsliding on a session he ended stronger than he started —
+        // after a Full 92 (record 0012) and after a layoff (record 0013, where 15
+        // of 17 were back to mastered by the last drill). He reads this line
+        // first, on a phone. Split it by where each kana actually ended up.
         var regressed = kanaKeys.filter(function (k) {
           return (st.kana[k].lastRelapseAt || 0) > since;
         });
-        if (regressed.length) {
-          L.push("  REGRESSED — had mastered, then lost (" + regressed.length + "): " +
-            regressed.join(" "));
+        var stillDown = regressed.filter(function (k) { return st.kana[k].streak < 3; });
+        var recovered = regressed.filter(function (k) { return st.kana[k].streak >= 3; });
+        if (stillDown.length) {
+          L.push("  LOST and still down (" + stillDown.length + "): " + stillDown.join(" "));
+        }
+        if (recovered.length) {
+          L.push("  Wobbled but recovered in-session (" + recovered.length + "): " +
+            recovered.join(" "));
         }
       }
 

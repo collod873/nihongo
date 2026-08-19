@@ -55,9 +55,13 @@
     "れ": "れ ends in a straight flick. わ curls round, ね loops closed.",
     "わ": "わ ends in a round open curve. ね loops closed, れ flicks straight, を adds a top bar.",
     "ね": "ね ends in a closed loop. わ curls open, れ flicks straight.",
-    "は": "は = left stem + one crossbar. ほ has two crossbars.",
-    "ほ": "ほ has two crossbars. は has one.",
-    "ま": "ま's strokes cross a single vertical. は has a separate left stem.",
+    // は/ほ/ま — the group's rule used to be "count the crossbars", which was
+    // built for は-vs-ほ and misroutes ま: ま has two bars, so counting puts it
+    // in ほ's bucket. The typed tally showed ま -> は 4x and ほ <-> ま both ways
+    // (record 0013). Rebased on the left stem; bar-counting is now secondary.
+    "は": "は starts with a tall stem on the LEFT that nothing crosses, then one crossbar. ほ has that stem too, with two bars. ま has no left stem at all.",
+    "ほ": "ほ starts with a tall stem on the LEFT that nothing crosses, then two crossbars. は has the stem and one bar. ま has no left stem at all.",
+    "ま": "ま has NO left stem — every stroke runs through its one central vertical. は and ほ both start with a separate stem on the left. Don't count bars here.",
     "う": "う wears a hat — the little stroke on top. つ is bare.",
     "つ": "つ is bare. う has the hat stroke on top.",
     "い": "い is two separate short strokes. り is taller and connected.",
@@ -72,8 +76,12 @@
     "ン": "ン's small stroke comes in from the LEFT, shallow. ソ's drops from the TOP.",
     "シ": "シ's marks sit on the LEFT and sweep UP — same side as ン.",
     "ツ": "ツ's marks sit on TOP and sweep DOWN — same side as ソ.",
-    "ク": "ク has a short stroke at top-left then a long diagonal. ケ's diagonal cuts across.",
-    "ケ": "ケ has a stroke cutting across the diagonal. ク doesn't.",
+    // ク/ケ/タ is one three-way question — "does a stroke cross the diagonal,
+    // and where?" — and タ was in no group and had no tip at all until record
+    // 0013, so injection could never pose the third case.
+    "ク": "Nothing crosses ク's long diagonal — the top stroke stops at the corner. ケ and タ both have one crossing it.",
+    "ケ": "ケ's extra stroke crosses the diagonal HIGH, near the top. タ's crosses low, through the middle.",
+    "タ": "タ's extra stroke crosses the diagonal LOW, through the middle. ケ's crosses high. ク has none.",
     // ワ survived Lesson 7 as the last of the "fu" hub (record 0009). Every other
     // member differs from フ by something ADDED — a leg, a crossing stroke, a top
     // bar — and those resolved. ワ's difference is structural, so the old tip
@@ -86,8 +94,11 @@
     "ラ": "ラ's top stroke is short and stops early. ヲ's runs the full width. フ has none.",
     "ス": "ス is フ with a leg kicking out below-left. ヌ is ス with a stroke crossing it.",
     "ヌ": "ヌ is ス with a stroke crossing through. フ has no leg at all.",
-    "ナ": "ナ is a plain plus. メ is an X. Add a tick on top and it's チ; a tick and a foot, ネ.",
-    "メ": "メ is an X. ナ is a plus.",
+    // ナ was the last "family tour" tip in the store — it named メ, チ and ネ in
+    // one breath, and ナ duly became a hub (me:3 | ne:1 | ma:1, record 0013).
+    // Same failure ワ had. One feature, nothing else.
+    "ナ": "ナ's two strokes meet SQUARE — a plus. メ's cross at a SLANT — an X.",
+    "メ": "メ's two strokes cross at a SLANT — an X. ナ's meet square — a plus.",
     "チ": "チ = ナ plus a tick above the bar. Add a foot at the bottom left and it's ネ. テ's top is a second flat bar.",
     "テ": "テ has a flat top line. チ's top stroke slants across.",
     "ホ": "ホ has two loose side dots. オ is connected through.",
@@ -102,7 +113,8 @@
     "ロ": "ロ is a closed box. コ is open on the left.",
     "ア": "ア's inner stroke hangs down from the crossbar. マ's sweeps from the corner, オ's is a full vertical.",
     // cross-script twins: no shape rule exists, so the tip is the reassurance
-    "リ": "リ (katakana) vs り (hiragana) — same sound either way, so this one is free.",
+    // リ sits in three groups (ル, り, レ) and its tip only ever covered り.
+    "リ": "リ's tall stroke hooks LEFT at the bottom. ル's kicks out RIGHT. (り is the hiragana — same sound, so that one is free.)",
     "ヤ": "ヤ (katakana) vs や (hiragana) — same sound either way.",
     "モ": "モ is two bars with a vertical hooking through. ホ has a vertical with loose side dots.",
     "セ": "セ (katakana) vs せ (hiragana) — same sound either way.",
@@ -114,12 +126,16 @@
     "サ": "サ has two short verticals through the bar. セ has one vertical and a curling base.",
     "ヨ": "ヨ is three bars open to the left. コ is two. ユ has the long base bar.",
     "ハ": "ハ is two separate strokes leaning apart. ホ has a vertical running through it.",
-    "ル": "ル's right stroke curves up and out. リ's drops straight down.",
+    // The old tip claimed リ "drops straight down". It doesn't — it hooks left.
+    // He was being asked to check a feature that isn't there (record 0013).
+    "ル": "ル's tall stroke kicks out to the RIGHT at the bottom. リ's hooks LEFT.",
     "ト": "ト is one vertical with a tick to the right. Nothing like よ (yo).",
     "よ": "よ has a loop at the bottom. ト (to) is just a vertical plus a tick.",
     "あ": "あ has a crossbar and a loop. お has the side dot on the right.",
-    "た": "た's left side is a small cross. に's left is a straight stem.",
-    "に": "に is a straight left stem plus two bars. た's left is a cross.",
+    // Same right half in both — he reads it and stops (た -> ni 5x, record 0013).
+    // Naming the decoy is the ワ move: tell him where NOT to look.
+    "た": "Same right side as に — ignore it. た's LEFT is a small cross.",
+    "に": "Same right side as た — ignore it. に's LEFT is one straight stem.",
     "け": "け is a straight left stem plus a curved right. せ has the crossbar.",
     // added from the 2026-08-13 clean full-92 (record 0008). Two hubs showed up:
     // フ absorbed ヲ/ヌ/ワ, and ネ/ね absorbed チ/ナ and れ/ぬ. Tips for hub members
@@ -151,7 +167,12 @@
     ["フ", "ワ", "ヲ", "ヌ", "ス"],        // everything hook-shaped came back "fu"
     ["ネ", "チ", "ナ", "ノ", "メ"],        // katakana half of the "ne" hub
     ["ミ", "モ"], ["ニ", "ノ"], ["レ", "リ"], ["ユ", "ロ"], ["ム", "マ", "ア"],
-    ["み", "め"], ["く", "へ"], ["わ", "を"]
+    ["み", "め"], ["く", "へ"], ["わ", "を"],
+    // (obs3) — record 0013. ["ク","ケ"] was only ever a pair, but タ is ク
+    // plus a crossing stroke exactly as ケ is, and it appeared in no group
+    // at all — so the three-way question was never posed. The rest are n=1
+    // typed-tally observations that are structurally plausible.
+    ["ク", "ケ", "タ"], ["タ", "ヌ"], ["ル", "レ"], ["ナ", "マ"]
   ];
 
   // Named families a lesson can drill in isolation, via data-family.
